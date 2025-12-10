@@ -1,7 +1,12 @@
 #include <crow.h>
 
-int main() {
-	std::cout << "Hello Nonexistent Backend\n";
-	return 0;
+int main()
+{
+    crow::SimpleApp app;
 
+    CROW_ROUTE(app, "/")([](){
+        return "Hello world";
+    });
+
+    app.port(80).run();
 }
