@@ -12,8 +12,9 @@ int main()
 	sqlite3_stmt* stmt;
 	int rc;
 
+
 	// Insert Into DB
-	rc = sqlite3_open("./emails.db", &db);
+	rc = sqlite3_open("/home/ubuntu/TheShadeBackend/emails.db", &db);
 
 	if (rc) {
 		fprintf(stderr, "Cannot Open DB Connection");
@@ -62,7 +63,7 @@ int main()
 		std::lock_guard<std::mutex> lock(db_mutex);
 
 		// Open DB
-		rc = sqlite3_open("./emails.db", &insert_db);
+		rc = sqlite3_open("/home/ubuntu/TheShadeBackend/emails.db", &insert_db);
 
 		if (rc)
 			return crow::response("501", "Failed To Open Database"); // Return Internal Server Error
