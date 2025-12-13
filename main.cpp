@@ -3,6 +3,10 @@
 #include<crow.h>
 #include<sqlite3.h>
 #include<mutex>
+#include<spawn.h>
+#include<sys/wait.h>
+
+extern char **environ;
 
 std::mutex db_mutex;
 
@@ -52,7 +56,23 @@ int main()
 			return crow::response(crow::status::BAD_REQUEST);
 
 		// Extract Email From JSON
-		std::string user_email = x["email"].s(); 
+		std::string user_email = x["email"].s();
+		
+		// Send Email 
+		pid_t pid;
+		const char* argv[] = {
+			"/home/ubuntu/TheShadeNewsletter/NewsVenv/bin/python3",
+			"/home/ubuntu/TheShadeNewsletter/newslettersignup.py",
+			user_email.c_str(),
+			nullptr
+		};
+
+		posix_spawn(&pid, "/usr/bin/python3", nullptr, nullptr, (char* const*)argv, environ);
+		
+		int status;
+		if (waitpid(pid, &status, 0) == -1 || !WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+    			return crow::response(crow::status::BAD_REQUEST, "Email sending failed");
+		}
 
 		// Prepare SQLite Query
 		sqlite3 *insert_db;
@@ -87,7 +107,7 @@ int main()
 		sqlite3_finalize(insert_stmt);
 		sqlite3_close(insert_db);
 
-		return crow::response("200", "Email Inserted\n");
+		return crow::response("200", "Check Your Email For A Signup Notification\n");
 	});
 
 	app.port(928).multithreaded().run();
